@@ -112,29 +112,6 @@ HRESULT CPushPinDesktop::SetMediaType(const CMediaType *pMediaType)
         if (pvi == NULL)
             return E_UNEXPECTED;
 
-        switch(pvi->bmiHeader.biBitCount)
-        {
-		    case 12:     // i420
-			    m_bConvertToI420 = true;
-				ASSERT(!m_bDeDupe); // not compatible with this yet
-                hr = S_OK;
-			    break;
-            case 8:     // 8-bit palettized
-            case 16:    // RGB565, RGB555
-            case 24:    // RGB24
-            case 32:    // RGB32
-                // Save the current media type and bit depth
-                //m_MediaType = *pMediaType; // use SetMediaType above instead
-                //m_nCurrentBitDepth = pvi->bmiHeader.biBitCount;
-                hr = S_OK;
-                break;
-
-            default:
-                // We should never agree any other media types
-                ASSERT(FALSE);
-                hr = E_INVALIDARG;
-                break;
-        }
 		LocalOutput("bitcount requested/negotiated: %d\n", pvi->bmiHeader.biBitCount);
     
       // The frame rate at which your filter should produce data is determined by the AvgTimePerFrame field of VIDEOINFOHEADER
@@ -182,11 +159,11 @@ HRESULT STDMETHODCALLTYPE CPushPinDesktop::SetFormat(AM_MEDIA_TYPE *pmt)
 		
         // for FMLE's benefit, only accept a setFormat of our "final" width [force setting via registry I guess, otherwise it only shows 80x60 whoa!]	    
 		// flash media live encoder uses setFormat to determine widths [?] and then only displays the smallest? oh man that is messed up
-        if( pvi->bmiHeader.biWidth != getCaptureDesiredFinalWidth() || 
+        /* TODO if( pvi->bmiHeader.biWidth != getCaptureDesiredFinalWidth() || 
            pvi->bmiHeader.biHeight != getCaptureDesiredFinalHeight())
         {
           return E_INVALIDARG;
-        }
+        }*/
 
 		// ignore other things like cropping requests for now...
 
@@ -268,15 +245,15 @@ HRESULT STDMETHODCALLTYPE CPushPinDesktop::GetStreamCaps(int iIndex, AM_MEDIA_TY
 	*/
 
     pvscc->VideoStandard = AnalogVideo_None;
-    pvscc->InputSize.cx = getCaptureDesiredFinalWidth();
-	pvscc->InputSize.cy = getCaptureDesiredFinalHeight();
+	pvscc->InputSize.cx = m_iCaptureWidth;
+	pvscc->InputSize.cy = m_iCaptureHeight;
 
 	// most of these values are fakes..
-	pvscc->MinCroppingSize.cx = getCaptureDesiredFinalWidth();
-    pvscc->MinCroppingSize.cy = getCaptureDesiredFinalHeight();
+	pvscc->MinCroppingSize.cx = m_iCaptureWidth;
+    pvscc->MinCroppingSize.cy = m_iCaptureHeight;
 
-    pvscc->MaxCroppingSize.cx = getCaptureDesiredFinalWidth();
-    pvscc->MaxCroppingSize.cy = getCaptureDesiredFinalHeight();
+    pvscc->MaxCroppingSize.cx = m_iCaptureWidth;
+    pvscc->MaxCroppingSize.cy = m_iCaptureHeight;
 
     pvscc->CropGranularityX = 1;
     pvscc->CropGranularityY = 1;
@@ -285,8 +262,8 @@ HRESULT STDMETHODCALLTYPE CPushPinDesktop::GetStreamCaps(int iIndex, AM_MEDIA_TY
 
     pvscc->MinOutputSize.cx = 1;
     pvscc->MinOutputSize.cy = 1;
-    pvscc->MaxOutputSize.cx = getCaptureDesiredFinalWidth();
-    pvscc->MaxOutputSize.cy = getCaptureDesiredFinalHeight();
+    pvscc->MaxOutputSize.cx = m_iCaptureWidth;
+    pvscc->MaxOutputSize.cy = m_iCaptureHeight;
     pvscc->OutputGranularityX = 1;
     pvscc->OutputGranularityY = 1;
 
@@ -296,10 +273,10 @@ HRESULT STDMETHODCALLTYPE CPushPinDesktop::GetStreamCaps(int iIndex, AM_MEDIA_TY
     pvscc->ShrinkTapsY = 1;
 
 	pvscc->MinFrameInterval = m_rtFrameLength; // the larger default is actually the MinFrameInterval, not the max
-	pvscc->MaxFrameInterval = 500000000; // 0.02 fps :) [though it could go lower, really...]
+	pvscc->MaxFrameInterval = m_rtFrameLength; // 0.02 fps :) [though it could go lower, really...]
 
-    pvscc->MinBitsPerSecond = (LONG) 1*1*8*GetFps(); // if in 8 bit mode 1x1. I guess.
-    pvscc->MaxBitsPerSecond = (LONG) getCaptureDesiredFinalWidth()*getCaptureDesiredFinalHeight()*32*GetFps() + 44; // + 44 header size? + the palette?
+    VIDEOINFO *pvi = (VIDEOINFO *) m_mt.Format();
+	pvscc->MaxBitsPerSecond = pvscc->MinBitsPerSecond = (LONG) (pvi->bmiHeader.biSizeImage*GetFps());// TODO getfps
 
 	return hr;
 }
@@ -434,7 +411,7 @@ HRESULT CPushPinDesktop::GetMediaType(int iPosition, CMediaType *pmt) // AM_MEDI
         return E_INVALIDARG;
 
     // Have we run out of types?
-    if(iPosition > 6)
+    if(iPosition > 0)
         return VFW_S_NO_MORE_ITEMS;
 
     VIDEOINFO *pvi = (VIDEOINFO *) pmt->AllocFormatBuffer(sizeof(VIDEOINFO));
@@ -444,84 +421,14 @@ HRESULT CPushPinDesktop::GetMediaType(int iPosition, CMediaType *pmt) // AM_MEDI
     // Initialize the VideoInfo structure before configuring its members
     ZeroMemory(pvi, sizeof(VIDEOINFO));
 
-	if(iPosition == 0) {
-		// pass it our "preferred" which is 16 bits...I guess...haven't really researched it, but do want it to have a consistent default.
-		iPosition = 3;
-			// 32 -> 24 (2): getdibits took 2.251ms
-			// 32 -> 32 (1): getdibits took 2.916ms
-			// except those numbers might be misleading in terms of total speed...hmm...
-	}
-    switch(iPosition)
-    {
-        case 1:
-        {    
-            // 32bit format
-
-            // Since we use RGB888 (the default for 32 bit), there is
-            // no reason to use BI_BITFIELDS to specify the RGB
-            // masks [sometimes even if you don't have enough bits you don't need to anyway?]
-			// Also, not everything supports BI_BITFIELDS ...
-            pvi->bmiHeader.biCompression = BI_RGB;
-            pvi->bmiHeader.biBitCount    = 32;
-            break;
-        }
-
-        case 2:
-        {   // Return our 24bit format, same as above comments
-            pvi->bmiHeader.biCompression = BI_RGB;
-            pvi->bmiHeader.biBitCount    = 24;
-            break;
-        }
-
-        case 3:
-        {       
-            // 16 bit per pixel RGB565 BI_BITFIELDS
-
-            // Place the RGB masks as the first 3 doublewords in the palette area
-            for(int i = 0; i < 3; i++)
-                pvi->TrueColorInfo.dwBitMasks[i] = bits565[i];
-
-			pvi->bmiHeader.biCompression = BI_BITFIELDS;
-			pvi->bmiHeader.biCompression = BI_RGB;
-            pvi->bmiHeader.biBitCount    = 16;
-            break;
-        }
-
-        case 4:
-        {   // 16 bits per pixel RGB555
-
-            // Place the RGB masks as the first 3 doublewords in the palette area
-            for(int i = 0; i < 3; i++)
-                pvi->TrueColorInfo.dwBitMasks[i] = bits555[i];
-
-            // LODO ??? need? not need? BI_BITFIELDS? Or is this the default so we don't need it? Or do we need a different type that doesn't specify BI_BITFIELDS?
-			pvi->bmiHeader.biCompression = BI_BITFIELDS;
-            pvi->bmiHeader.biBitCount    = 16;
-            break;
-        }
-
-        case 5:
-        {   // 8 bit palettised
-
-            pvi->bmiHeader.biCompression = BI_RGB;
-            pvi->bmiHeader.biBitCount    = 8;
-            pvi->bmiHeader.biClrUsed     = iPALETTE_COLORS;
-            break;
-        }
-		case 6:
-		{ // the i420 freak-o
-               pvi->bmiHeader.biCompression = FOURCC_I420; // who knows if this is right LOL
-               pvi->bmiHeader.biBitCount    = 12;
-			   pvi->bmiHeader.biSizeImage = (getCaptureDesiredFinalWidth()*getCaptureDesiredFinalHeight()*3)/2; 
-			   pmt->SetSubtype(&WMMEDIASUBTYPE_I420);
-			   break;
-		}
-    }
+	// TODO more here...
+    pvi->bmiHeader.biCompression = BI_RGB;
+    pvi->bmiHeader.biBitCount    = 32;
 
     // Now adjust some parameters that are the same for all formats
     pvi->bmiHeader.biSize       = sizeof(BITMAPINFOHEADER);
-    pvi->bmiHeader.biWidth      = getCaptureDesiredFinalWidth();
-    pvi->bmiHeader.biHeight     = getCaptureDesiredFinalHeight();
+	pvi->bmiHeader.biWidth      = m_iCaptureWidth;
+    pvi->bmiHeader.biHeight     = m_iCaptureHeight;
     pvi->bmiHeader.biPlanes     = 1;
 	if(pvi->bmiHeader.biSizeImage == 0)
       pvi->bmiHeader.biSizeImage = GetBitmapSize(&pvi->bmiHeader); // calculates the size for us, after we gave it the width and everything else we already chucked into it

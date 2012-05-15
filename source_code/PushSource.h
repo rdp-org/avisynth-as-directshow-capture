@@ -83,11 +83,8 @@ protected:
     RECT m_rScreen;                     // Rect containing screen coordinates we are currently "capturing"
     //int m_nCurrentBitDepth;             // capture requested bit depth
 
-    int getNegotiatedFinalWidth();
-    int getNegotiatedFinalHeight();                   
-
-	int m_iCaptureConfigWidth;
-	int m_iCaptureConfigHeight;
+	int m_iCaptureWidth;
+	int m_iCaptureHeight;
 
     CMediaType m_MediaType;
     CImageDisplay m_Display;            // Figures out our media type for us
@@ -100,27 +97,12 @@ protected:
 
 	bool m_bFormatAlreadySet;
 	bool m_bConvertToI420;
-	int m_iScreenBitDepth;
 
 	float GetFps();
 
-	boolean m_bReReadRegistry;
-	boolean m_bDeDupe;
-	int m_millisToSleepBeforePollForChanges;
-	HWND m_iHwndToTrack;
-    void CopyScreenToDataBlock(HDC hScrDc, BYTE *pData, BITMAPINFO *pHeader, IMediaSample *pSample);
-	void doJustBitBltOrScaling(HDC hMemDC, int nWidth, int nHeight,int nDestWidth,int nDestHeight, HDC hScrDC, int nX, int nY);
-	void doDIBits(HDC hScrDC, HBITMAP hRawBitmap, int nHeightScanLines, BYTE *pData, BITMAPINFO *pHeader);
-
     BYTE *pOldData;
 
-	int m_iStretchToThisConfigWidth;
-    int m_iStretchToThisConfigHeight;
-    int m_iStretchMode;
-
-	int getCaptureDesiredFinalWidth();
-	int getCaptureDesiredFinalHeight();
-
+	
 public:
 
     //////////////////////////////////////////////////////////////////////////
@@ -169,8 +151,5 @@ public:
     HRESULT STDMETHODCALLTYPE Set(REFGUID guidPropSet, DWORD dwID, void *pInstanceData, DWORD cbInstanceData, void *pPropData, DWORD cbPropData);
     HRESULT STDMETHODCALLTYPE Get(REFGUID guidPropSet, DWORD dwPropID, void *pInstanceData,DWORD cbInstanceData, void *pPropData, DWORD cbPropData, DWORD *pcbReturned);
     HRESULT STDMETHODCALLTYPE QuerySupported(REFGUID guidPropSet, DWORD dwPropID, DWORD *pTypeSupport);
-
-private:
-	void reReadCurrentPosition(int isReRead);
 
 };

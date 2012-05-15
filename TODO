@@ -8,6 +8,11 @@ distribute with avisynth.dll, add to end of PATH
   
 == maybe ==
 
-scripting coolness for it
-"box in box" stuff LOL
+scripting coolness for it somehow
 demos
+  "box in box" script demo LOL
+  
+== never ==
+
+automagic dragging demos
+it can "notice changed mtime and reload the avisynth" for auto transitioningsing

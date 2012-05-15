@@ -62,8 +62,3 @@ long double GetCounterSinceStartMillis(__int64 start);
 void AddMouse(HDC hMemDC, LPRECT lpRect, HDC hScrDC, HWND hwnd);
 void doJustBitBlt(HDC hMemDC, int nWidth, int nHeight,int nDestWidth,int nDestHeight, HDC hScrDC, int nX, int nY);
 void doDIBits(HDC hScrDC, HBITMAP hRawBitmap, int nHeightScanLines, BYTE *pData, BITMAPINFO *pHeader);
-
-void GetRectOfWindowIncludingAero(HWND ofThis, RECT *toHere);
-HRESULT turnAeroOn(boolean onOrOff);
-int rgb32_to_i420(int width, int height, const char * src, char * dst);
-int GetTrueScreenDepth(HDC hDC);

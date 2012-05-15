@@ -14,7 +14,7 @@
     <ProjectGuid>{39469123-3EB7-45F3-A15B-3854DFD2C2EB}</ProjectGuid>
     <RootNamespace>PushSource</RootNamespace>
     <Keyword>Win32Proj</Keyword>
-    <ProjectName>screen-capture-recorder</ProjectName>
+    <ProjectName>avisynth-as-dshow</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
