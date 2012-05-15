@@ -146,42 +146,54 @@ static int avisynth_read_header(){
   return 0;
 }
 
-static int avisynth_read_packet(AVFormatContext *s, AVPacket *pkt)
+#include <assert.h>
+
+static int avisynth_read_packet(BYTE *pData, LONG pDataSize)
 {
-  AVISynthContext *avs = s->priv_data;
+
   HRESULT res;
   AVISynthStream *stream;
   int stream_id = avs->next_stream;
+  assert(stream_id == 0);
   LONG read_size;
 
   // handle interleaving manually...
   stream = &avs->streams[stream_id];
 
   if (stream->read >= stream->info.dwLength)
-    return AVERROR(EIO);
+    return -1;
 
-  if (av_new_packet(pkt, stream->chunck_size))
-    return AVERROR(EIO);
-  pkt->stream_index = stream_id;
-  pkt->pts = avs->streams[stream_id].read / avs->streams[stream_id].chunck_samples;
+  // chunck_size is an avisynth thing. whoa!
+  if(pDataSize < stream->chunck_size)
+	 return -1;
 
-  res = AVIStreamRead(stream->handle, stream->read, stream->chunck_samples, pkt->data, stream->chunck_size, &read_size, NULL);
+  // guess we have our own concept of stream_index, maybe?
+  // pkt->stream_index = stream_id;
+  // is this like a pts integer or something?
+  __int64 pts = avs->streams[stream_id].read / avs->streams[stream_id].chunck_samples;
 
-  pkt->size = read_size;
+  res = AVIStreamRead(stream->handle, stream->read, stream->chunck_samples, pData, stream->chunck_size, &read_size, NULL);
+
+  __int64 size = read_size;
+  
+  assert(pDataSize <= read_size);
 
   stream->read += stream->chunck_samples;
 
+  // I guess with avi you're just supposed to read one stream, then the next, forever? huh?
+
+  /*
   // prepare for the next stream to read
   do {
     avs->next_stream = (avs->next_stream+1) % avs->nb_streams;
   } while (avs->next_stream != stream_id && s->streams[avs->next_stream]->discard >= AVDISCARD_ALL);
-
-  return (res == S_OK) ? pkt->size : -1;
+  */
+  return (res == S_OK) ? read_size : -1;
 }
 
-static int avisynth_read_close(AVFormatContext *s)
+static int avisynth_read_close()
 {
-  AVISynthContext *avs = s->priv_data;
+
   int i;
 
   for (i=0;i<avs->nb_streams;i++)
@@ -189,15 +201,16 @@ static int avisynth_read_close(AVFormatContext *s)
       AVIStreamRelease(avs->streams[i].handle);
     }
 
-  av_free(avs->streams);
+  free(avs->streams);
   AVIFileRelease(avs->file);
   AVIFileExit();
   return 0;
 }
 
-static int avisynth_read_seek(AVFormatContext *s, int stream_index, int64_t pts, int flags)
+// unused, for now...
+static int avisynth_read_seek(int stream_index, DWORD pts, int flags)
 {
-  AVISynthContext *avs = s->priv_data;
+
   int stream_id;
 
   for (stream_id = 0; stream_id < avs->nb_streams; stream_id++)
