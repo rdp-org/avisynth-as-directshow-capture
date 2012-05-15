@@ -75,9 +75,8 @@ protected:
 
 	double m_fFpsSinceBeginningOfTime;
 
-    int m_FramesWritten;				// To track where we are, mostly debug now
+    int m_FramesWritten;			// To track where we are, mostly debug now
     REFERENCE_TIME m_rtFrameLength; // also used to get the fps
-	// float m_fFps; use the method to get this now
 	REFERENCE_TIME previousFrameEndTime;
 
     RECT m_rScreen;                     // Rect containing screen coordinates we are currently "capturing"
@@ -90,17 +89,11 @@ protected:
     CImageDisplay m_Display;            // Figures out our media type for us
 	CPushSourceDesktop* m_pParent;
 
-	HDC hScrDc;
-	HBITMAP     hRawBitmap;
-
-	//CCritSec m_cSharedState;            // Protects our internal state
+	//CCritSec m_cSharedState;            // Protects our internal state, unused
 
 	bool m_bFormatAlreadySet;
-	bool m_bConvertToI420;
 
 	float GetFps();
-
-    BYTE *pOldData;
 
 	
 public:

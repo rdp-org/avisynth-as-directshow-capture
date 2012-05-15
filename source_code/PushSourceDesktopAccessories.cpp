@@ -104,7 +104,6 @@ HRESULT CPushPinDesktop::SetMediaType(const CMediaType *pMediaType)
 
     // Pass the call up to my base class
     HRESULT hr = CSourceStream::SetMediaType(pMediaType); // assigns our local m_mt via m_mt.Set(*pmt) ... 
-    m_bConvertToI420 = false; // in case we are re-negotiating the type and it was set to i420 before...
 
     if(SUCCEEDED(hr))
     {

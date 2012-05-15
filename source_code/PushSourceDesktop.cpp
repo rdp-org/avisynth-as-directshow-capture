@@ -28,15 +28,11 @@ wchar_t out[1000];
 
 // the default child constructor...
 CPushPinDesktop::CPushPinDesktop(HRESULT *phr, CPushSourceDesktop *pFilter)
-        : CSourceStream(NAME("What is this used for?"), phr, pFilter, L"Capture"),
+        : CSourceStream(NAME("What is this string for?"), phr, pFilter, L"Capture"),
         m_FramesWritten(0),
         m_iFrameNumber(0),
-		pOldData(NULL),
-		m_bConvertToI420(false),
-        //m_nCurrentBitDepth(32), // negotiated later...
 		m_pParent(pFilter),
-		m_bFormatAlreadySet(false),
-		hRawBitmap(NULL)
+		m_bFormatAlreadySet(false)
 {
 
     // Get the device context of the main display, just to get some metrics for it...
@@ -44,10 +40,8 @@ CPushPinDesktop::CPushPinDesktop(HRESULT *phr, CPushSourceDesktop *pFilter)
 
     // Get the dimensions of the main desktop window as the default
     m_rScreen.left   = m_rScreen.top = 0;
-    m_rScreen.right  = GetDeviceCaps(hScrDc, HORZRES); // NB this *fails* for dual monitor support currently... but we just get the wrong width by default, at least with aero windows 7 both can capture both monitors
-    m_rScreen.bottom = GetDeviceCaps(hScrDc, VERTRES);
+	// TODO rdp
 
-	// now read some custom settings...
 	WarmupCounter();
 	LocalOutput(L"warmup the debugging message system");
 	__int64 measureDebugOutputSpeed = StartCounter();
@@ -157,18 +151,9 @@ CPushPinDesktop::~CPushPinDesktop()
 	// They *should* call this...VLC does at least, correctly.
 
     // Release the device context stuff
-	::ReleaseDC(NULL, hScrDc);
-    ::DeleteDC(hScrDc);
     DbgLog((LOG_TRACE, 3, TEXT("Total no. Frames written %d"), m_iFrameNumber));
 	set_config_string_setting(L"last_run_performance", out);
 
-    if (hRawBitmap)
-      DeleteObject(hRawBitmap); // don't need those bytes anymore -- I think we are supposed to delete just this and not hOldBitmap
-
-    if(pOldData) {
-		free(pOldData);
-		pOldData = NULL;
-	}
 }
 
 
@@ -191,37 +176,10 @@ HRESULT CPushPinDesktop::DecideBufferSize(IMemAllocator *pAlloc,
     VIDEOINFO *pvi = (VIDEOINFO *) m_mt.Format();
 	BITMAPINFOHEADER header = pvi->bmiHeader;
 	ASSERT(header.biPlanes == 1); // sanity check
-	// ASSERT(header.biCompression == 0); // meaning "none" sanity check, unless we are allowing for BI_BITFIELDS [?]
-	// now try to avoid this crash [XP, VLC 1.1.11]: vlc -vvv dshow:// :dshow-vdev="screen-capture-recorder" :dshow-adev --sout  "#transcode{venc=theora,vcodec=theo,vb=512,scale=0.7,acodec=vorb,ab=128,channels=2,samplerate=44100,audio-sync}:standard{access=file,mux=ogg,dst=test.ogv}" with 10x10 or 1000x1000
-	// LODO check if biClrUsed is passed in right for 16 bit [I'd guess it is...]
-	// pProperties->cbBuffer = pvi->bmiHeader.biSizeImage; // too small. Apparently *way* too small.
 	
-	int bytesPerLine;
-	// there may be a windows method that would do this for us...GetBitmapSize(&header); but might be too small for VLC? LODO try it :)
-	// some pasted code...
-	int bytesPerPixel = (header.biBitCount/8);
-	if(m_bConvertToI420) {
-	  bytesPerPixel = 32/8; // we convert from a 32 bit to i420, so need more space in this case
-	}
-
-    bytesPerLine = header.biWidth * bytesPerPixel;
-    /* round up to a dword boundary */
-    if (bytesPerLine & 0x0003) 
-    {
-      bytesPerLine |= 0x0003;
-      ++bytesPerLine;
-    }
-
 	ASSERT(header.biHeight > 0); // sanity check
 	ASSERT(header.biWidth > 0); // sanity check
-	// NB that we are adding in space for a final "pixel array" (http://en.wikipedia.org/wiki/BMP_file_format#DIB_Header_.28Bitmap_Information_Header.29) even though we typically don't need it, this seems to fix the segfaults
-	// maybe somehow down the line some VLC thing thinks it might be there...weirder than weird.. LODO debug it LOL.
-	int bitmapSize = 14 + header.biSize + (long)(bytesPerLine)*(header.biHeight) + bytesPerLine*header.biHeight;
-	pProperties->cbBuffer = bitmapSize;
-	//pProperties->cbBuffer = max(pProperties->cbBuffer, m_mt.GetSampleSize()); // didn't help anything
-	if(m_bConvertToI420) {
-	  pProperties->cbBuffer = header.biHeight * header.biWidth*3/2; // necessary to prevent an "out of memory" error for FMLE. Yikes. Oh wow yikes.
-	}
+	pProperties->cbBuffer = header.biSizeImage; // TODO check this, with RGB: vlc -vvv dshow:// :dshow-vdev="screen-capture-recorder" :dshow-adev --sout  "#transcode{venc=theora,vcodec=theo,vb=512,scale=0.7,acodec=vorb,ab=128,channels=2,samplerate=44100,audio-sync}:standard{access=file,mux=ogg,dst=test.ogv}" with 10x10 or 1000x1000
 
     pProperties->cBuffers = 1; // 2 here doesn't seem to help the crashes...
 
@@ -242,20 +200,8 @@ HRESULT CPushPinDesktop::DecideBufferSize(IMemAllocator *pAlloc,
     }
 
 	// now some "once per run" setups
+	// ...
 	
-	
-	if(pOldData) {
-		free(pOldData);
-		pOldData = NULL;
-	}
-    pOldData = (BYTE *) malloc(max(pProperties->cbBuffer*pProperties->cBuffers, bitmapSize)); // we convert from a 32 bit to i420, so need more space, hence max
-    memset(pOldData, 0, pProperties->cbBuffer*pProperties->cBuffers); // reset it just in case :P	
-	
-    // create a bitmap compatible with the screen DC
-	if(hRawBitmap)
-		DeleteObject (hRawBitmap);
-	hRawBitmap = CreateCompatibleBitmap(hScrDc, m_iCaptureWidth, m_iCaptureHeight);
-
     return NOERROR;
 
 } // DecideBufferSize
