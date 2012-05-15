@@ -30,6 +30,9 @@
     <ClCompile Include="parent.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="avisynth.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="PushSource.def">

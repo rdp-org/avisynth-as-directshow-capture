@@ -99,6 +99,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="avisynth.cpp" />
     <ClCompile Include="DibHelper.cpp" />
     <ClCompile Include="parent.cpp" />
     <ClCompile Include="PushSourceDesktop.cpp" />
