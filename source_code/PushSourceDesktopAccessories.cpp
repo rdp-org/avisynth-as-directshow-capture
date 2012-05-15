@@ -20,53 +20,8 @@ HRESULT CPushPinDesktop::CheckMediaType(const CMediaType *pMediaType)
 {
 	CAutoLock cAutoLock(m_pFilter->pStateLock());
 
-    CheckPointer(pMediaType,E_POINTER);
-
-	const GUID Type = *(pMediaType->Type());
-    if(Type != GUID_NULL && (Type != MEDIATYPE_Video) ||   // we only output video, GUID_NULL means any
-        !(pMediaType->IsFixedSize()))                  // in fixed size samples
-    {                                                  
-        return E_INVALIDARG;
-    }
-
-	// const GUID Type = *pMediaType->Type(); // always just MEDIATYPE_Video
-
-    // Check for the subtypes we support
-    if (pMediaType->Subtype() == NULL)
-        return E_INVALIDARG;
-
-	const GUID SubType2 = *pMediaType->Subtype();
+    CheckPointer(pMediaType, E_POINTER);
 	
-    // Get the format area of the media type
-    VIDEOINFO *pvi = (VIDEOINFO *) pMediaType->Format();
-    if(pvi == NULL)
-        return E_INVALIDARG; // usually never this...
-
-    if(    (SubType2 != MEDIASUBTYPE_RGB8) // these are all the same value? But maybe the pointers are different. Hmm.
-        && (SubType2 != MEDIASUBTYPE_RGB565)
-        && (SubType2 != MEDIASUBTYPE_RGB555)
-        && (SubType2 != MEDIASUBTYPE_RGB24)
-        && (SubType2 != MEDIASUBTYPE_RGB32)
-		&& (SubType2 != GUID_NULL) // means "anything", I guess...
-		)
-    {
-		if(SubType2 == WMMEDIASUBTYPE_I420) { // 30323449-0000-0010-8000-00AA00389B71 MEDIASUBTYPE_I420 == WMMEDIASUBTYPE_I420
-			if(pvi->bmiHeader.biBitCount == 12) { // biCompression 808596553
-				// 12 is correct for i420 -- WFMLE uses this, VLC *can* also use it, too
-			}else {
-			  return E_INVALIDARG;
-			}
-		} else {
-          return E_INVALIDARG; // sometimes FLME asks for YV12 {32315659-0000-0010-8000-00AA00389B71}, or  
-		  // 32595559-0000-0010-8000-00AA00389B71  MEDIASUBTYPE_YUY2, which is apparently "identical format" to I420
-		  // 43594448-0000-0010-8000-00AA00389B71  MEDIASUBTYPE_HDYC
-		  // 59565955-0000-0010-8000-00AA00389B71  MEDIASUBTYPE_UYVY
-		  // 56555949-0000-0010-8000-00AA00389B71  MEDIASUBTYPE_IYUV # dunno if I actually get this one
-		}
-    } else {
-		 // RGB's -- our default -- WFMLE doesn't get here, VLC does :P
-	}
-
 	if(m_bFormatAlreadySet) {
 		// then it must be the same as our current...see SetFormat msdn
 	    if(m_mt == *pMediaType) {
@@ -76,6 +31,27 @@ HRESULT CPushPinDesktop::CheckMediaType(const CMediaType *pMediaType)
 		}
 	}
 
+	const GUID Type = *(pMediaType->Type());
+    if(Type != GUID_NULL && (Type != MEDIATYPE_Video) ||   // we only output video, GUID_NULL means any
+        !(pMediaType->IsFixedSize()))                  // in fixed size samples
+    {                                                  
+        return E_INVALIDARG;
+    }
+
+    // Check for the subtypes we support
+    if (pMediaType->Subtype() == NULL)
+        return E_INVALIDARG;
+
+	
+	const GUID SubType2 = *pMediaType->Subtype();
+
+	if(SubType2 != GetBitmapSubtype(&savedVideoFormat.bmiHeader))
+		return E_INVALIDARG;
+
+    // Get the format area of the media type
+    VIDEOINFO *pvi = (VIDEOINFO *) pMediaType->Format();
+    if(pvi == NULL)
+        return E_INVALIDARG; // usually never see this...
 
     // Don't accept formats with negative height, which would cause the desktop
     // image to be displayed upside down.
@@ -86,7 +62,10 @@ HRESULT CPushPinDesktop::CheckMediaType(const CMediaType *pMediaType)
     if (pvi->bmiHeader.biWidth <= 0)
         return E_INVALIDARG;
 
-    return S_OK;  // This format is acceptable.
+	if(memcmp(&pvi->bmiHeader, &savedVideoFormat.bmiHeader, sizeof(BITMAPINFOHEADER)) == 0)
+		return S_OK;
+	else
+		return E_INVALIDARG;
 
 } // CheckMediaType
 
@@ -116,10 +95,6 @@ HRESULT CPushPinDesktop::SetMediaType(const CMediaType *pMediaType)
       // The frame rate at which your filter should produce data is determined by the AvgTimePerFrame field of VIDEOINFOHEADER
 	  if(pvi->AvgTimePerFrame) // or should Set Format accept this? hmm...
 	    m_rtFrameLength = pvi->AvgTimePerFrame; // allow them to set whatever fps they request, i.e. if it's less than the max default.  VLC command line can specify this, for instance...
-	  // also setup scaling here, as WFMLE and ffplay and VLC all get here...
-	  m_rScreen.right = m_rScreen.left + pvi->bmiHeader.biWidth; // allow them to set whatever "scaling size" they want [set m_rScreen is negotiated right here]
-	  m_rScreen.bottom = m_rScreen.top + pvi->bmiHeader.biHeight;
-
     }
 	
     return hr;
@@ -155,26 +130,9 @@ HRESULT STDMETHODCALLTYPE CPushPinDesktop::SetFormat(AM_MEDIA_TYPE *pmt)
 		if(CheckMediaType((CMediaType *) pmt) != S_OK) {
 			return E_FAIL; // just in case :P [did skype get here once?]
 		}
-		
-        // for FMLE's benefit, only accept a setFormat of our "final" width [force setting via registry I guess, otherwise it only shows 80x60 whoa!]	    
-		// flash media live encoder uses setFormat to determine widths [?] and then only displays the smallest? oh man that is messed up
-        /* TODO if( pvi->bmiHeader.biWidth != getCaptureDesiredFinalWidth() || 
-           pvi->bmiHeader.biHeight != getCaptureDesiredFinalHeight())
-        {
-          return E_INVALIDARG;
-        }*/
-
-		// ignore other things like cropping requests for now...
 
 		// now save it away...for being able to re-offer it later. We could use Set MediaType but we're just being lazy and re-using m_mt for many things I guess
 	    m_mt = *pmt;  
-
-		// The frame rate at which your filter should produce data is determined by the AvgTimePerFrame field of VIDEOINFOHEADER
-	    if(pvi->AvgTimePerFrame)
-	      m_rtFrameLength = pvi->AvgTimePerFrame; // allow them to set whatever fps they request, i.e. if it's less than the max default.  VLC command line can specify this, for instance...
-	    // also setup scaling here, as WFMLE and ffplay and VLC all get here...
-	    m_rScreen.right = m_rScreen.left + pvi->bmiHeader.biWidth; // allow them to set whatever "scaling size" they want [set m_rScreen is negotiated right here]
-	    m_rScreen.bottom = m_rScreen.top + pvi->bmiHeader.biHeight;
 	}
 
     IPin* pin;
@@ -191,7 +149,6 @@ HRESULT STDMETHODCALLTYPE CPushPinDesktop::SetFormat(AM_MEDIA_TYPE *pmt)
 		// so we're ok with "whatever" format they pass us, we're just in the setup phase...
 	}
 	
-
 
 	// success of some type
 	if(pmt == NULL) {		
@@ -217,7 +174,7 @@ HRESULT STDMETHODCALLTYPE CPushPinDesktop::GetFormat(AM_MEDIA_TYPE **ppmt)
 
 HRESULT STDMETHODCALLTYPE CPushPinDesktop::GetNumberOfCapabilities(int *piCount, int *piSize)
 {
-    *piCount = 7;
+    *piCount = 1;
     *piSize = sizeof(VIDEO_STREAM_CONFIG_CAPS); // VIDEO_STREAM_CONFIG_CAPS is an MS struct
     return S_OK;
 }
@@ -259,8 +216,8 @@ HRESULT STDMETHODCALLTYPE CPushPinDesktop::GetStreamCaps(int iIndex, AM_MEDIA_TY
     pvscc->CropAlignX = 1;
     pvscc->CropAlignY = 1;
 
-    pvscc->MinOutputSize.cx = 1;
-    pvscc->MinOutputSize.cy = 1;
+    pvscc->MinOutputSize.cx = m_iCaptureWidth;
+    pvscc->MinOutputSize.cy = m_iCaptureHeight;
     pvscc->MaxOutputSize.cx = m_iCaptureWidth;
     pvscc->MaxOutputSize.cy = m_iCaptureHeight;
     pvscc->OutputGranularityX = 1;
@@ -275,7 +232,7 @@ HRESULT STDMETHODCALLTYPE CPushPinDesktop::GetStreamCaps(int iIndex, AM_MEDIA_TY
 	pvscc->MaxFrameInterval = m_rtFrameLength; // 0.02 fps :) [though it could go lower, really...]
 
     VIDEOINFO *pvi = (VIDEOINFO *) m_mt.Format();
-	pvscc->MaxBitsPerSecond = pvscc->MinBitsPerSecond = (LONG) (pvi->bmiHeader.biSizeImage*GetFps());// TODO getfps
+	pvscc->MaxBitsPerSecond = pvscc->MinBitsPerSecond = (LONG) (pvi->bmiHeader.biSizeImage*GetFps());
 
 	return hr;
 }
@@ -420,20 +377,9 @@ HRESULT CPushPinDesktop::GetMediaType(int iPosition, CMediaType *pmt) // AM_MEDI
     // Initialize the VideoInfo structure before configuring its members
     ZeroMemory(pvi, sizeof(VIDEOINFO));
 
-	// TODO more here...
-    pvi->bmiHeader.biCompression = BI_RGB;
-    pvi->bmiHeader.biBitCount    = 32;
-
-    // Now adjust some parameters that are the same for all formats
-    pvi->bmiHeader.biSize       = sizeof(BITMAPINFOHEADER);
-	pvi->bmiHeader.biWidth      = m_iCaptureWidth;
-    pvi->bmiHeader.biHeight     = m_iCaptureHeight;
-    pvi->bmiHeader.biPlanes     = 1;
-	if(pvi->bmiHeader.biSizeImage == 0)
-      pvi->bmiHeader.biSizeImage = GetBitmapSize(&pvi->bmiHeader); // calculates the size for us, after we gave it the width and everything else we already chucked into it
+	memcpy(&pvi->bmiHeader, &savedVideoFormat.bmiHeader, sizeof(BITMAPINFOHEADER));
     pmt->SetSampleSize(pvi->bmiHeader.biSizeImage); // use the above size
 
-	pvi->bmiHeader.biClrImportant = 0;
 	pvi->AvgTimePerFrame = m_rtFrameLength; // from our config or default
 
     SetRectEmpty(&(pvi->rcSource)); // we want the whole image area rendered.
@@ -441,7 +387,7 @@ HRESULT CPushPinDesktop::GetMediaType(int iPosition, CMediaType *pmt) // AM_MEDI
 
     pmt->SetType(&MEDIATYPE_Video);
     pmt->SetFormatType(&FORMAT_VideoInfo);
-    pmt->SetTemporalCompression(FALSE);
+    pmt->SetTemporalCompression(FALSE); // ??
 
     // Work out the GUID for the subtype from the header info.
 	if(*pmt->Subtype() == GUID_NULL) {

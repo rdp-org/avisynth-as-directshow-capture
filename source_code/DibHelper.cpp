@@ -13,9 +13,6 @@
 
 #include <stdio.h>
 #include <assert.h>
-// dwm turn off shtuff
-// #pragma comment(lib,"dwmapi.lib")  // ?
-#include <dwmapi.h>
 
 extern int show_performance;
 

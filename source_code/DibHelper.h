@@ -6,6 +6,8 @@
 // Copyright (c) Microsoft Corporation.  All rights reserved.
 //------------------------------------------------------------------------------
 
+#include <vfw.h> // needed, I guess for all the aviXX type calls
+
 
 #define HDIB HANDLE
 
@@ -59,3 +61,18 @@ HRESULT set_config_string_setting(LPCTSTR szValueName, wchar_t *szToThis );
 void WarmupCounter();
 __int64 StartCounter();
 long double GetCounterSinceStartMillis(__int64 start);
+
+
+typedef struct {
+  PAVISTREAM handle;
+  AVISTREAMINFO info;
+  DWORD read;
+  LONG chunck_size;
+  LONG chunck_samples;
+} AVISynthStream;
+
+extern BITMAPINFO savedVideoFormat;
+extern AVISynthStream *stream;
+int avisynth_read_header();
+void avisynth_read_close();
+int avisynth_read_packet(BYTE *pData, LONG pDataSize);

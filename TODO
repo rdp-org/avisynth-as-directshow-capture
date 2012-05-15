@@ -1,9 +1,13 @@
 = todo =
 
+use their pts
+
 can handle video input
   negotiation 1 type
   buffer work
 
+audio
+  
 distribute with avisynth.dll, add to end of PATH
   
 == maybe ==

@@ -89,7 +89,7 @@ protected:
     CImageDisplay m_Display;            // Figures out our media type for us
 	CPushSourceDesktop* m_pParent;
 
-	//CCritSec m_cSharedState;            // Protects our internal state, unused
+	//CCritSec m_cSharedState;            // Protects our internal state, unused use 	CAutoLock cAutoLock(m_pFilter->pStateLock()); instead
 
 	bool m_bFormatAlreadySet;
 

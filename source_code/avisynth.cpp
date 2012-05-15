@@ -1,15 +1,7 @@
 
 #include <windows.h>
-#include <vfw.h> // needed?
 #include "DibHelper.h"
-
-typedef struct {
-  PAVISTREAM handle;
-  AVISTREAMINFO info;
-  DWORD read;
-  LONG chunck_size;
-  LONG chunck_samples;
-} AVISynthStream;
+#include <assert.h>
 
 typedef struct {
   PAVIFILE file;
@@ -22,7 +14,7 @@ typedef struct {
 AVISynthContext *avs;
 AVISynthStream *stream;
 WAVEFORMATEX wvfmt;
-BITMAPINFO imgfmt;
+BITMAPINFO savedVideoFormat;
 
 #define av_log(a,b,c,d) LocalOutput(c,d)
 
@@ -32,7 +24,8 @@ void *av_mallocz(size_t size) {
 	return a;
 }
 
-static int avisynth_read_header(){
+int avisynth_read_header(){
+  avs = (AVISynthContext *) av_mallocz(sizeof(AVISynthContext));
   HRESULT res;
   AVIFILEINFO info;
   DWORD id;
@@ -40,7 +33,9 @@ static int avisynth_read_header(){
 
   AVIFileInit();
 
-  res = AVIFileOpen(&avs->file, L"test filename TODO", OF_READ|OF_SHARE_DENY_WRITE, NULL);
+  // TODO rdp flexible path
+
+  res = AVIFileOpen(&avs->file, L"c:\\dev\\ruby\\avisynth-as-directshow-capture\\test.avs", OF_READ|OF_SHARE_DENY_WRITE, NULL);
   if (res != S_OK)
     {
       av_log(s, AV_LOG_ERROR, "AVIFileOpen failed with error %ld", res);
@@ -57,7 +52,7 @@ static int avisynth_read_header(){
     }
 
   avs->streams = (AVISynthStream *) av_mallocz(info.dwStreams * sizeof(AVISynthStream));
-
+  assert(info.dwStreams == 1);
   for (id=0; id<info.dwStreams; id++)
     {
       stream = &avs->streams[id];
@@ -69,11 +64,12 @@ static int avisynth_read_header(){
               if (stream->info.fccType == streamtypeAUDIO)
                 {
 
+			      assert(false); // don't do audio yet
                   LONG struct_size = sizeof(WAVEFORMATEX);
                   if (AVIStreamReadFormat(stream->handle, 0, &wvfmt, &struct_size) != S_OK)
                     continue;
 
-				  /*
+				  /* audio:
                   st = avformat_new_stream(s, NULL);
                   st->id = id;
                   st->codec->codec_type = AVMEDIA_TYPE_AUDIO;
@@ -84,12 +80,12 @@ static int avisynth_read_header(){
                   st->codec->bit_rate = wvfmt.nAvgBytesPerSec * 8;
                   st->codec->bits_per_coded_sample = wvfmt.wBitsPerSample;
 
-                  stream->chunck_samples = wvfmt.nSamplesPerSec * (uint64_t)info.dwScale / (uint64_t)info.dwRate;
-                  stream->chunck_size = stream->chunck_samples * wvfmt.nChannels * wvfmt.wBitsPerSample / 8;
 
                   st->codec->codec_tag = wvfmt.wFormatTag;
                   st->codec->codec_id = ff_wav_codec_get_id(wvfmt.wFormatTag, st->codec->bits_per_coded_sample);
 				  */
+                  stream->chunck_samples = wvfmt.nSamplesPerSec * (__int64)info.dwScale / (__int64) info.dwRate;
+                  stream->chunck_size = stream->chunck_samples * wvfmt.nChannels * wvfmt.wBitsPerSample / 8;
                 }
               else if (stream->info.fccType == streamtypeVIDEO)
                 {
@@ -99,23 +95,30 @@ static int avisynth_read_header(){
                   stream->chunck_size = stream->info.dwSampleSize;
                   stream->chunck_samples = 1;
 
-                  if (AVIStreamReadFormat(stream->handle, 0, &imgfmt, &struct_size) != S_OK)
+                  if (AVIStreamReadFormat(stream->handle, 0, &savedVideoFormat, &struct_size) != S_OK)
                     continue;
 
+				  /*
+
+				  stream->info.dwRate is numerator
+				  stream->info.dwScale is denominator [?]
+				  savedVideoFormat.bmiHeader.biWidth
+
+				  */
                   /*st = avformat_new_stream(s, NULL);
                   st->id = id;
                   st->codec->codec_type = AVMEDIA_TYPE_VIDEO;
                   st->r_frame_rate.num = stream->info.dwRate;
                   st->r_frame_rate.den = stream->info.dwScale;
 
-                  st->codec->width = imgfmt.bmiHeader.biWidth;
-                  st->codec->height = imgfmt.bmiHeader.biHeight;
+                  st->codec->width = savedVideoFormat.bmiHeader.biWidth;
+                  st->codec->height = savedVideoFormat.bmiHeader.biHeight;
 
-                  st->codec->bits_per_coded_sample = imgfmt.bmiHeader.biBitCount;
+                  st->codec->bits_per_coded_sample = savedVideoFormat.bmiHeader.biBitCount;
                   st->codec->bit_rate = (uint64_t)stream->info.dwSampleSize * (uint64_t)stream->info.dwRate * 8 / (uint64_t)stream->info.dwScale;
-                  st->codec->codec_tag = imgfmt.bmiHeader.biCompression;
-                  st->codec->codec_id = ff_codec_get_id(ff_codec_bmp_tags, imgfmt.bmiHeader.biCompression);
-                  if (st->codec->codec_id == CODEC_ID_RAWVIDEO && imgfmt.bmiHeader.biCompression== BI_RGB) {
+                  st->codec->codec_tag = savedVideoFormat.bmiHeader.biCompression;
+                  st->codec->codec_id = ff_codec_get_id(ff_codec_bmp_tags, savedVideoFormat.bmiHeader.biCompression);
+                  if (st->codec->codec_id == CODEC_ID_RAWVIDEO && savedVideoFormat.bmiHeader.biCompression== BI_RGB) {
                     st->codec->extradata = av_malloc(9 + FF_INPUT_BUFFER_PADDING_SIZE);
                     if (st->codec->extradata) {
                       st->codec->extradata_size = 9;
@@ -146,11 +149,8 @@ static int avisynth_read_header(){
   return 0;
 }
 
-#include <assert.h>
-
-static int avisynth_read_packet(BYTE *pData, LONG pDataSize)
+int avisynth_read_packet(BYTE *pData, LONG pDataSize)
 {
-
   HRESULT res;
   AVISynthStream *stream;
   int stream_id = avs->next_stream;
@@ -160,23 +160,25 @@ static int avisynth_read_packet(BYTE *pData, LONG pDataSize)
   // handle interleaving manually...
   stream = &avs->streams[stream_id];
 
-  if (stream->read >= stream->info.dwLength)
-    return -1;
+  // read is the pts? that always increases...
+  //if (stream->read >= stream->info.dwLength)
+  //  return -1;
 
   // chunck_size is an avisynth thing. whoa!
   if(pDataSize < stream->chunck_size)
-	 return -1;
+	 assert(false);
 
   // guess we have our own concept of stream_index, maybe?
   // pkt->stream_index = stream_id;
   // is this like a pts integer or something?
   __int64 pts = avs->streams[stream_id].read / avs->streams[stream_id].chunck_samples;
 
+  // I think this will block until data is available, or 0 for EOF [?]
   res = AVIStreamRead(stream->handle, stream->read, stream->chunck_samples, pData, stream->chunck_size, &read_size, NULL);
 
   __int64 size = read_size;
   
-  assert(pDataSize <= read_size);
+  assert(pDataSize >= read_size);
 
   stream->read += stream->chunck_samples;
 
@@ -191,7 +193,7 @@ static int avisynth_read_packet(BYTE *pData, LONG pDataSize)
   return (res == S_OK) ? read_size : -1;
 }
 
-static int avisynth_read_close()
+void avisynth_read_close()
 {
 
   int i;
@@ -204,11 +206,11 @@ static int avisynth_read_close()
   free(avs->streams);
   AVIFileRelease(avs->file);
   AVIFileExit();
-  return 0;
+  free(avs);
 }
 
 // unused, for now...
-static int avisynth_read_seek(int stream_index, DWORD pts, int flags)
+int avisynth_read_seek(int stream_index, DWORD pts, int flags)
 {
 
   int stream_id;

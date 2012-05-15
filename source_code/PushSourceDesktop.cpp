@@ -40,7 +40,12 @@ CPushPinDesktop::CPushPinDesktop(HRESULT *phr, CPushSourceDesktop *pFilter)
 
     // Get the dimensions of the main desktop window as the default
     m_rScreen.left   = m_rScreen.top = 0;
-	// TODO rdp
+
+	avisynth_read_header();
+
+	m_iCaptureWidth = savedVideoFormat.bmiHeader.biWidth;
+	m_iCaptureHeight = savedVideoFormat.bmiHeader.biHeight;
+    m_rtFrameLength = UNITS / stream->info.dwRate/stream->info.dwScale; // LODO double check
 
 	WarmupCounter();
 	LocalOutput(L"warmup the debugging message system");
@@ -56,17 +61,13 @@ HRESULT CPushPinDesktop::FillBuffer(IMediaSample *pSample)
 	//LocalOutput("called fillbuffer"); Encoder 4 does *not* get here.
 
 	__int64 startThisRound = StartCounter();
-	BYTE *pData;
-
-    CheckPointer(pSample, E_POINTER);
-
     // Access the sample's data buffer
+	BYTE *pData;
+    CheckPointer(pSample, E_POINTER);
     pSample->GetPointer(&pData);
 
     // Make sure that we're still using video format
     ASSERT(m_mt.formattype == FORMAT_VideoInfo);
-
-    VIDEOINFOHEADER *pVih = (VIDEOINFOHEADER*) m_mt.pbFormat;
 
 	// for some reason the timings are messed up initially, as there's no start time at all for the first frame (?) we don't start in State_Running ?
 	// race condition?
@@ -76,8 +77,13 @@ HRESULT CPushPinDesktop::FillBuffer(IMediaSample *pSample)
 	bool fullyStarted = myState == State_Running;
 	
 	boolean gotNew = false;
-	
-	// TODO rdp
+
+	int got = -1;
+	while(got == -1) {
+	  got = avisynth_read_packet(pData, pSample->GetSize()); 
+	}
+
+	pSample->SetActualDataLength(got);	
 
 	// capture how long it took before we add in our own arbitrary delay to enforce fps...
 	long double millisThisRoundTook = GetCounterSinceStartMillis(startThisRound);
@@ -151,6 +157,7 @@ CPushPinDesktop::~CPushPinDesktop()
 	// They *should* call this...VLC does at least, correctly.
 
     // Release the device context stuff
+	avisynth_read_close();
     DbgLog((LOG_TRACE, 3, TEXT("Total no. Frames written %d"), m_iFrameNumber));
 	set_config_string_setting(L"last_run_performance", out);
 
