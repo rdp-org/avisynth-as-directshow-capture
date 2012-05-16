@@ -34,6 +34,10 @@ to be a string containig the full path to the file you created.
 To input a live source, create a "graphedit" file (download GraphStudio, run it, insert filters -> video capture source), save.  Then in your avs file, it will look like.
 directshowsource("screen-capture-recorder.GRF", audio=False, framecount=1000000, fps=10) # fps is just to force it 'down' to that fps, or 'fake it up' to that fps through duplication
 
+= Advanced =
+
+
+
 = Trouble shooting =
 
 Sometimes you need to set the fps to double what you actually want, since AviSynth is, 
