@@ -75,13 +75,11 @@ protected:
 
 	double m_fFpsSinceBeginningOfTime;
 
-    int m_FramesWritten;			// To track where we are, mostly debug now
     REFERENCE_TIME m_rtFrameLength; // also used to get the fps
 	REFERENCE_TIME previousFrameEndTime;
 
     RECT m_rScreen;                     // Rect containing screen coordinates we are currently "capturing"
-    //int m_nCurrentBitDepth;             // capture requested bit depth
-
+    
 	int m_iCaptureWidth;
 	int m_iCaptureHeight;
 

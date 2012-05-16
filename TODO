@@ -4,9 +4,6 @@ use their pts
 
 can handle video input
   negotiation 1 type
-  buffer work
-
-audio
   
 distribute with avisynth.dll, add to end of PATH
   just graphedit 4 now...with instructions
@@ -14,6 +11,8 @@ distribute with avisynth.dll, add to end of PATH
 variable filename, gui for setting it
 
 == maybe ==
+
+audio
 
 scripting coolness for it somehow
 demos

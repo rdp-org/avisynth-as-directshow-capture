@@ -28,8 +28,7 @@ wchar_t out[1000];
 
 // the default child constructor...
 CPushPinDesktop::CPushPinDesktop(HRESULT *phr, CPushSourceDesktop *pFilter)
-        : CSourceStream(NAME("What is this string for?"), phr, pFilter, L"Capture"),
-        m_FramesWritten(0),
+        : CSourceStream(NAME("What is this string even used for?"), phr, pFilter, L"Capture"),
         m_iFrameNumber(0),
 		m_pParent(pFilter),
 		m_bFormatAlreadySet(false)
@@ -45,8 +44,8 @@ CPushPinDesktop::CPushPinDesktop(HRESULT *phr, CPushSourceDesktop *pFilter)
 
 	m_iCaptureWidth = savedVideoFormat.bmiHeader.biWidth;
 	m_iCaptureHeight = savedVideoFormat.bmiHeader.biHeight;
-    m_rtFrameLength = UNITS / stream->info.dwRate/stream->info.dwScale; // LODO double check
-
+    m_rtFrameLength = (double) UNITS * stream->info.dwRate/stream->info.dwScale/100; // weird math...
+	assert(m_rtFrameLength > 0);
 	WarmupCounter();
 	LocalOutput(L"warmup the debugging message system");
 	__int64 measureDebugOutputSpeed = StartCounter();
@@ -90,42 +89,11 @@ HRESULT CPushPinDesktop::FillBuffer(IMediaSample *pSample)
 	fastestRoundMillis = min(millisThisRoundTook, fastestRoundMillis); // keep stats :)
 	sumMillisTook += millisThisRoundTook;
 
-	CRefTime now;
-	CRefTime endFrame;
-    CSourceStream::m_pFilter->StreamTime(now);
-
-    // wait until we "should" send this frame out...
-	if((now > 0) && (now < previousFrameEndTime)) { // now > 0 to accomodate for if there is no reference graph clock at all...also boot strap time ignore it :P
-		while(now < previousFrameEndTime) { // guarantees monotonicity too :P
-		  Sleep(1);
-          CSourceStream::m_pFilter->StreamTime(now);
-		}
-		// avoid a tidge of creep since we sleep until [typically] just past the previous end.
-		endFrame = previousFrameEndTime + m_rtFrameLength;
-	    previousFrameEndTime = endFrame;
-	    
-	} else {
-	  if(show_performance)
-	    LocalOutput("it missed a frame--can't keep up %d", countMissed++); // we don't miss time typically I don't think, unless de-dupe is turned on, or aero, or slow computer, buffering problems downstream, etc.
-	  // have to add a bit here, or it will always be "it missed some time" for the next round...forever!
-	  endFrame = now + m_rtFrameLength;
-	  // most of this stuff I just made up because it "sounded right"
-	  //LocalOutput("checking to see if I can catch up again now: %llu previous end: %llu subtr: %llu %i", now, previousFrameEndTime, previousFrameEndTime - m_rtFrameLength, previousFrameEndTime - m_rtFrameLength);
-	  if(now > (previousFrameEndTime - (long long) m_rtFrameLength)) { // do I need a long long cast?
-		// let it pretend and try to catch up, it's not quite a frame behind
-        previousFrameEndTime = previousFrameEndTime + m_rtFrameLength;
-	  } else {
-		endFrame = now + m_rtFrameLength/2; // ?? seems to work...I guess...
-		previousFrameEndTime = endFrame;
-	  }
-	    
-	}
-	previousFrameEndTime = max(0, previousFrameEndTime);// avoid startup negatives, which would kill our math on the next loop...
-    
-	// LocalOutput("marking frame with timestamps: %llu %llu", now, endFrame);
-    //pSample->SetTime((REFERENCE_TIME *) &now, (REFERENCE_TIME *) &endFrame);
-	//pSample->SetMediaTime((REFERENCE_TIME *)&now, (REFERENCE_TIME *) &endFrame); //useless seemingly
-
+	REFERENCE_TIME start = m_iFrameNumber*m_rtFrameLength;
+	REFERENCE_TIME end = (m_iFrameNumber+1)*m_rtFrameLength;
+	
+	pSample->SetTime(&start, &end);// assume they're feeding us stuff from a 'set size' not capture...which is weird but...
+	
 	if(fullyStarted) {
       m_iFrameNumber++;
 	}

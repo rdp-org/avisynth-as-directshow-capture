@@ -124,7 +124,7 @@ boolean is_config_set_to_1(LPCTSTR szValueName) {
   HKEY hKey;
   LONG i;
   i = RegOpenKeyEx(HKEY_CURRENT_USER,
-      L"SOFTWARE\\os_screen_capture",  0, KEY_READ, &hKey);
+      L"SOFTWARE\\avisynth-as-dshow-capture",  0, KEY_READ, &hKey);
     
   if ( i != ERROR_SUCCESS)
   {

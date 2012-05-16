@@ -7,7 +7,7 @@
 //------------------------------------------------------------------------------
 
 #include <vfw.h> // needed, I guess for all the aviXX type calls
-
+#include <assert.h>
 
 #define HDIB HANDLE
 
