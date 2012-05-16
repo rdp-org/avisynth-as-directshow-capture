@@ -92,7 +92,7 @@ HRESULT CPushPinDesktop::FillBuffer(IMediaSample *pSample)
 	REFERENCE_TIME start = m_iFrameNumber*m_rtFrameLength;
 	REFERENCE_TIME end = (m_iFrameNumber+1)*m_rtFrameLength;
 	
-	pSample->SetTime(&start, &end);// assume they're feeding us stuff from a 'set size' not capture...which is weird but...
+	//pSample->SetTime(&start, &end);// assume they're feeding us stuff from a 'set size' not capture...which is weird but...
 	
 	if(fullyStarted) {
       m_iFrameNumber++;
