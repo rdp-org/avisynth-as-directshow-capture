@@ -173,7 +173,7 @@ wchar_t *read_config_filepath() {
   assert(i==ERROR_SUCCESS); // it's just gotta be there, man!
 
   LPTSTR stringPointer;
-  HRESULT hres = RegGetString(hKey,L"filename_to_read", &stringPointer);
+  HRESULT hres = RegGetString(hKey,L"avs_filename_to_read", &stringPointer);
   wcscpy(output, stringPointer);
   free(stringPointer);
   return &output[0];
@@ -181,6 +181,7 @@ wchar_t *read_config_filepath() {
 
 
 // returns default if nothing is in the registry
+// reads an int
  int read_config_setting(LPCTSTR szValueName, int default) {
   HKEY hKey = NULL;
   LONG i;
