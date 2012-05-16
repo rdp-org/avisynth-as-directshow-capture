@@ -11,6 +11,8 @@ audio
 distribute with avisynth.dll, add to end of PATH
   just graphedit 4 now...with instructions
 
+variable filename, gui for setting it
+
 == maybe ==
 
 scripting coolness for it somehow
