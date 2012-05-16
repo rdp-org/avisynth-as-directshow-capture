@@ -29,14 +29,15 @@ HKEY_CURRENT_USER\\Software\\avisynth-as-dshow-capture\\avs_filename_to_read
 to be a string containig the full path to the file you created.
 (or use one of the helper setup utilities provided, to set this key to be the filename).
 
+= AviSynth =
+
+There are lots of AviSynth tutorials around.  It seems slightly powerful than ffmpeg's (still developing) filter system.
+Here is my "demo" of combining two live sources into 1: https://github.com/rdp-org/avisynth-as-directshow-capture/tree/master/samples
+
 = Using Live Sources =
 
 To input a live source, create a "graphedit" file (download GraphStudio, run it, insert filters -> video capture source), save.  Then in your avs file, it will look like.
 directshowsource("screen-capture-recorder.GRF", audio=False, framecount=1000000, fps=10) # fps is just to force it 'down' to that fps, or 'fake it up' to that fps through duplication
-
-= Advanced =
-
-
 
 = Trouble shooting =
 
