@@ -95,10 +95,12 @@ HRESULT CPushPinDesktop::FillBuffer(IMediaSample *pSample)
 	fastestRoundMillis = min(millisThisRoundTook, fastestRoundMillis); // keep stats :)
 	sumMillisTook += millisThisRoundTook;
 
-	REFERENCE_TIME start = m_iFrameNumber*m_rtFrameLength;
-	REFERENCE_TIME end = (m_iFrameNumber+1)*m_rtFrameLength;
+	CRefTime now;
+	CSourceStream::m_pFilter->StreamTime(now);
+	// assume avs will give it to us at "about the right time"
+	REFERENCE_TIME end = now + m_rtFrameLength;
 	
-	//pSample->SetTime(&start, &end);// assume they're feeding us stuff from a 'set size' not capture...which is weird but...
+	pSample->SetTime((REFERENCE_TIME *) &now, &end);// assume they're feeding us stuff from a 'set size' not capture...which is weird but...
 	
 	if(fullyStarted) {
       m_iFrameNumber++;
