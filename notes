@@ -1,0 +1,14 @@
+ffplay test.avs *works* with fps
+  ffplay -f dshow -i video=avisynth-as-capture-source
+    does *not* work too fast.
+	
+Maybe I'm supposed to slow it down?
+
+        .avs file  device
+
+ffplay    2          30
+mplayer   2        wrapper: 2
+vlc       ?          30
+
+
+(default fps is 48)
