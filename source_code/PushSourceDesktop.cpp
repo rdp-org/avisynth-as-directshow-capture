@@ -36,7 +36,7 @@ CPushPinDesktop::CPushPinDesktop(HRESULT *phr, CPushSourceDesktop *pFilter)
     HMODULE loadable = LoadLibraryA("avisynth.dll");
     if(!loadable)
     {
-        MessageBox(NULL, L"AviSynth library not found, please install", NULL, NULL);         // XXX test
+        MessageBox(NULL, L"AviSynth library not found, please install first", NULL, NULL);         // XXX test
     } else {
 		FreeLibrary(loadable);
 	}

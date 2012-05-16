@@ -1,18 +1,33 @@
-This program allows one to take input from an AviSynth file, and input it to your "favorite" directshow app (vlc, ffmpeg, streaming utilities).
+This program allows one to take input from an AviSynth file, and input it to your "favorite" directshow app (vlc, ffmpeg, streaming apps, etc.).
 
 AviSynth files can stream files or live capture sources.  They can also apply "extra filters" to the output, like overlaying one image over another, etc.
+
+Really what I wanted it for was to be able to stream multiple videos with "video inside a video" enabled.  AviSynth also has some other filters that may be useful.
+
+Who *doesn't* want to be able to use skype with flexible/controlled input? :)
 
 = Installation =
 
 Install "avisynth" 2.x (https://sourceforge.net/projects/avisynth2)
+Install this app.
 
-Now create a file, like "test.avs" with contents:
+Now run "program files" => "avisynth capture" => "test current avisynth config"
+It should display a 'version' video.  Now proceed to "usage"
+
+= Usage =
+
+Now create your own file, for instance something like "test.avs" with avisynth script contents, for instance:
 
 Version()
 
-Now set the registry key (see configuration_setup_utility/setup_filename_to_use.rb for keyname) to the full path of the file you want to use.
-(or use one of the helper setups provided
+Or any other AVS scripts.
 
+Now set the registry key
+
+HKEY_CURRENT_USER\\Software\\avisynth-as-dshow-capture\\avs_filename_to_read
+
+to be a string containig the full path to the file you created.
+(or use one of the helper setup utilities provided, to set this key to be the filename).
 
 = Using Live Sources =
 
@@ -25,6 +40,11 @@ Sometimes you need to set the fps to double what you actually want, since AviSyn
 timing wise, I think "just missing" frames so it always waits for a second one to come through.
 
 Ping me if you have any feedback/feature requests you'd like me to do/add.
+
+Also note that mplayer can already play avisynth files "natively", and ffmpeg/vlc can accept "live source input" natively, so this 
+is just another tool for you in your belt.
+
+There is also currently a known bug that if you set an fps, it isn't respected (it just streams as fast as possible).  Ping me if you want this fixed.
 
 = Contact =
 http://groups.google.com/group/roger-projects

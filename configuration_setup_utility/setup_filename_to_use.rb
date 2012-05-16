@@ -1,6 +1,6 @@
 require 'win32/registry'
 
-screen_reg = Win32::Registry::HKEY_CURRENT_USER.create "Software\\avisynth-as-dshow-capture" # LODO .keys fails?
+screen_reg = Win32::Registry::HKEY_CURRENT_USER.create "Software\\avisynth-as-dshow-capture"
 require 'add_vendored_gems_to_load_path.rb' # for swinghelpers' sane
 require 'jruby-swing-helpers/swing_helpers'
 old = screen_reg['avs_filename_to_read'] rescue nil # yikes exception handling is *hard* ish in ruby
@@ -9,4 +9,3 @@ filename = SwingHelpers.new_previously_existing_file_selector_and_go 'select avi
 screen_reg['avs_filename_to_read'] = filename
 p 'saved it as ' + filename
 screen_reg.close
-SwingHelpers.hard_exit # ??
