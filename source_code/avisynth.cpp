@@ -33,9 +33,8 @@ int avisynth_read_header(){
 
   AVIFileInit();
 
-  // TODO rdp flexible path
-
-  res = AVIFileOpen(&avs->file, L"c:\\dev\\ruby\\avisynth-as-directshow-capture\\test.avs", OF_READ|OF_SHARE_DENY_WRITE, NULL);
+  
+  res = AVIFileOpen(&avs->file, read_config_filepath(), OF_READ|OF_SHARE_DENY_WRITE, NULL);
   if (res != S_OK)
     {
       av_log(s, AV_LOG_ERROR, "AVIFileOpen failed with error %ld", res);

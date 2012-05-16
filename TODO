@@ -1,18 +1,13 @@
 = todo =
 
-use their pts
+variable filename, gui for choosing it
 
-can handle video input
-  negotiation 1 type
-  
-distribute with avisynth.dll, add to end of PATH
-  just graphedit 4 now...with instructions
+audio, separate file uh guess
 
-variable filename, gui for setting it
+use version.avs as default after an install.  Only if key doesn't exist? huh?
 
 == maybe ==
 
-audio
 
 scripting coolness for it somehow
 demos
@@ -22,6 +17,9 @@ demos
   the same, but with "on the fly" better selection of output type "from that pin" somehow
 
 == never ==
+distribute with avisynth.dll, add to end of PATH
+  just graphedit 4 now...with instructions
+
 
 automagic dragging demos
 it can "notice changed mtime and reload the avisynth" for auto transitioningsing

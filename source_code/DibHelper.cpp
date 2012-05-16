@@ -114,20 +114,81 @@ HRESULT RegGetDWord(HKEY hKey, LPCTSTR szValueName, DWORD * lpdwResult) {
 	return NOERROR;
 }
 
+// =====================================================================================
+HRESULT RegGetString(HKEY hKey, LPCTSTR szValueName, LPTSTR * lpszResult) {
+ 
+    // Given a HKEY and value name returns a string from the registry.
+    // Upon successful return the string should be freed using free()
+    // eg. RegGetString(hKey, TEXT("my value"), &szString);
+ 
+    DWORD dwType=0, dwDataSize=0, dwBufSize=0;
+    LONG lResult;
+ 
+    // Incase we fail set the return string to null...
+    if (lpszResult != NULL) *lpszResult = NULL;
+ 
+    // Check input parameters...
+    if (hKey == NULL || lpszResult == NULL) return E_INVALIDARG;
+ 
+    // Get the length of the string in bytes (placed in dwDataSize)...
+    lResult = RegQueryValueEx(hKey, szValueName, 0, &dwType, NULL, &dwDataSize );
+ 
+    // Check result and make sure the registry value is a string(REG_SZ)...
+    if (lResult != ERROR_SUCCESS) return HRESULT_FROM_WIN32(lResult);
+    else if (dwType != REG_SZ)    return DISP_E_TYPEMISMATCH;
+ 
+    // Allocate memory for string - We add space for a null terminating character...
+    dwBufSize = dwDataSize + (1 * sizeof(TCHAR));
+    *lpszResult = (LPTSTR) malloc(dwBufSize);
+ 
+    if (*lpszResult == NULL) return E_OUTOFMEMORY;
+ 
+    // Now get the actual string from the registry...
+    lResult = RegQueryValueEx(hKey, szValueName, 0, &dwType, (LPBYTE) *lpszResult, &dwDataSize );
+ 
+    // Check result and type again.
+    // If we fail here we must free the memory we allocated...
+    if (lResult != ERROR_SUCCESS) { free(*lpszResult); return HRESULT_FROM_WIN32(lResult); }
+    else if (dwType != REG_SZ)    { free(*lpszResult); return DISP_E_TYPEMISMATCH; }
+ 
+    // We are not guaranteed a null terminated string from RegQueryValueEx.
+    // Explicitly null terminate the returned string...
+    (*lpszResult)[(dwBufSize / sizeof(TCHAR)) - 1] = TEXT('\0');
+ 
+    return NOERROR;
+}
 
 boolean is_config_set_to_1(LPCTSTR szValueName) {
   return read_config_setting(szValueName, 0) == 1;
 }
 
-// returns default if nothing is in the registry
- int read_config_setting(LPCTSTR szValueName, int default) {
+wchar_t output[2048];
+
+wchar_t *read_config_filepath() {
   HKEY hKey;
   LONG i;
   i = RegOpenKeyEx(HKEY_CURRENT_USER,
       L"SOFTWARE\\avisynth-as-dshow-capture",  0, KEY_READ, &hKey);
     
+  assert(i==ERROR_SUCCESS); // it's just gotta be there, man!
+
+  LPTSTR stringPointer;
+  HRESULT hres = RegGetString(hKey,L"filename_to_read", &stringPointer);
+  wcscpy(output, stringPointer);
+  free(stringPointer);
+  return &output[0];
+}
+
+
+// returns default if nothing is in the registry
+ int read_config_setting(LPCTSTR szValueName, int default) {
+  HKEY hKey = NULL;
+  LONG i;
+  i = RegOpenKeyEx(HKEY_CURRENT_USER,
+      L"SOFTWARE\\avisynth-as-dshow-capture",  0, KEY_READ, &hKey);
+    
   if ( i != ERROR_SUCCESS)
-  {
+  {	  // assume we don't have to clos eth ekey
     return default;
   } else {
 	DWORD dwVal;
@@ -143,6 +204,7 @@ boolean is_config_set_to_1(LPCTSTR szValueName) {
 		}
 	}
   }
+  
  
 }
 

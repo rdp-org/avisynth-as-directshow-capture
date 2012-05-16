@@ -10,7 +10,8 @@ Now create a file, like "test.avs" with contents:
 
 Version()
 
-Now set the registry key
+Now set the registry key (see configuration_setup_utility/setup_filename_to_use.rb for keyname) to the full path of the file you want to use.
+(or use one of the helper setups provided
 
 
 = Using Live Sources =

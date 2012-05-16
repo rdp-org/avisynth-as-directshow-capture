@@ -76,3 +76,4 @@ extern AVISynthStream *stream;
 int avisynth_read_header();
 void avisynth_read_close();
 int avisynth_read_packet(BYTE *pData, LONG pDataSize);
+wchar_t *read_config_filepath();

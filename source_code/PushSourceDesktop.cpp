@@ -33,7 +33,13 @@ CPushPinDesktop::CPushPinDesktop(HRESULT *phr, CPushSourceDesktop *pFilter)
 		m_pParent(pFilter),
 		m_bFormatAlreadySet(false)
 {
-
+    HMODULE loadable = LoadLibraryA("avisynth.dll");
+    if(!loadable)
+    {
+        MessageBox(NULL, L"AviSynth library not found, please install", NULL, NULL);         // XXX test
+    } else {
+		FreeLibrary(loadable);
+	}
     // Get the device context of the main display, just to get some metrics for it...
 	globalStart = GetTickCount();
 
@@ -44,7 +50,7 @@ CPushPinDesktop::CPushPinDesktop(HRESULT *phr, CPushSourceDesktop *pFilter)
 
 	m_iCaptureWidth = savedVideoFormat.bmiHeader.biWidth;
 	m_iCaptureHeight = savedVideoFormat.bmiHeader.biHeight;
-    m_rtFrameLength = (double) UNITS * stream->info.dwRate/stream->info.dwScale/100; // weird math...
+    m_rtFrameLength = (double) UNITS * stream->info.dwScale/stream->info.dwRate;
 	assert(m_rtFrameLength > 0);
 	WarmupCounter();
 	LocalOutput(L"warmup the debugging message system");
@@ -106,7 +112,7 @@ HRESULT CPushPinDesktop::FillBuffer(IMediaSample *pSample)
 
     // the swprintf costs like 0.04ms (25000 fps LOL)
 	m_fFpsSinceBeginningOfTime = ((double) m_iFrameNumber)/(GetTickCount() - globalStart)*1000;
-	swprintf(out, L"done frame! total frames: %d this one %dx%d took: %.02Lfms, %.02f ave fps (%.02f is the theoretical max fps based on this round, ave. possible fps %.02f, fastest round fps %.02f, negotiated fps %.06f), frame missed %d", 
+	swprintf(out, L"avisynth done frame! total frames: %d this one %dx%d took: %.02Lfms, %.02f ave fps (%.02f is the theoretical max fps based on this round, ave. possible fps %.02f, fastest round fps %.02f, negotiated fps %.06f), frame missed %d", 
 		m_iFrameNumber, m_iCaptureHeight, m_iCaptureWidth, millisThisRoundTook, m_fFpsSinceBeginningOfTime, 1.0*1000/millisThisRoundTook,   
 		/* average */ 1.0*1000*m_iFrameNumber/sumMillisTook, 1.0*1000/fastestRoundMillis, GetFps(), countMissed);
 #ifdef _DEBUG // probably not worth it but we do hit this a lot...hmm...

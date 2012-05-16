@@ -10,7 +10,7 @@
  **********************************************/
 
 CPushSourceDesktop::CPushSourceDesktop(IUnknown *pUnk, HRESULT *phr)
-           : CSource(NAME("PushSourceDesktop Parent"), pUnk, CLSID_PushSourceDesktop)
+           : CSource(NAME("AvisynthDshow Parent"), pUnk, CLSID_PushSourceDesktop)
 {
     // The pin magically adds itself to our pin array.
 	// except its not an array since we just have one [?]
