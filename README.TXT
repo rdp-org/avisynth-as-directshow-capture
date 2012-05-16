@@ -25,3 +25,7 @@ Sometimes you need to set the fps to double what you actually want, since AviSyn
 timing wise, I think "just missing" frames so it always waits for a second one to come through.
 
 Ping me if you have any feedback/feature requests you'd like me to do/add.
+
+= Contact =
+http://groups.google.com/group/roger-projects
+roger-projects@googlegroups.com

@@ -1,6 +1,6 @@
 #define AppVer "0.0.1"
 
-#define AppName "AviSynth as DirectShow Capture"
+#define AppName "AviSynth as DirectShow Capture Device"
 ; AppId === AppName by default BTW
 
 [Run]
