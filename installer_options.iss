@@ -1,6 +1,6 @@
-#define AppVer "0.6.5"
+#define AppVer "0.0.1"
 
-#define AppName "Screen Capturer Recorder 32-bit"
+#define AppName "AviSynth as DirectShow Capture"
 ; AppId === AppName by default BTW
 
 [Run]

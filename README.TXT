@@ -13,13 +13,14 @@ Version()
 Now set the registry key
 
 
-= Live Sources =
+= Using Live Sources =
 
-To input a live source, create 
-
+To input a live source, create a "graphedit" file (download GraphStudio, run it, insert filters -> video capture source), save.  Then in your avs file, it will look like.
+directshowsource("screen-capture-recorder.GRF", audio=False, framecount=1000000, fps=10) # fps is just to force it 'down' to that fps, or 'fake it up' to that fps through duplication
 
 = Trouble shooting =
 
+Sometimes you need to set the fps to double what you actually want, since AviSynth is, 
+timing wise, I think "just missing" frames so it always waits for a second one to come through.
 
-
-Ping me if you have any feedback/feature requests you'd like me to do.
+Ping me if you have any feedback/feature requests you'd like me to do/add.
