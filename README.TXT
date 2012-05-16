@@ -4,7 +4,7 @@ AviSynth files can stream files or live capture sources.  They can also apply "e
 
 Really what I wanted it for was to be able to stream multiple videos with "video inside a video" enabled.  AviSynth also has some other filters that may be useful.
 
-Who *doesn't* want to be able to use skype with flexible/controlled input? :)
+Who *doesn't* want to be able to use skype with flexible/controlled input, after all? :)
 
 = Installation =
 
@@ -12,7 +12,7 @@ Install "avisynth" 2.x (https://sourceforge.net/projects/avisynth2)
 Install this app, download from https://github.com/rdp-org/avisynth-as-directshow-capture/downloads
 
 Now run "program files" => "avisynth capture" => "test current avisynth config"
-It should display a 'version' video.  Now proceed to "usage"
+It should display a 'version' video.  If it does, eureka! Now proceed to "usage"
 
 = Usage =
 
