@@ -9,7 +9,7 @@ Who *doesn't* want to be able to use skype with flexible/controlled input? :)
 = Installation =
 
 Install "avisynth" 2.x (https://sourceforge.net/projects/avisynth2)
-Install this app.
+Install this app, download from https://github.com/rdp-org/avisynth-as-directshow-capture/downloads
 
 Now run "program files" => "avisynth capture" => "test current avisynth config"
 It should display a 'version' video.  Now proceed to "usage"
@@ -46,6 +46,10 @@ is just another tool for you in your belt.
 
 There is also currently a known bug that if you set an fps, it isn't respected (it just streams as fast as possible).  Ping me if you want this fixed.
 
-= Contact =
+= Contact/feedback/issues =
+
 http://groups.google.com/group/roger-projects
 roger-projects@googlegroups.com
+
+Source: https://github.com/rdp-org/avisynth-as-directshow-capture
+Ping me for any feature requests, like easier video on video, etc.
