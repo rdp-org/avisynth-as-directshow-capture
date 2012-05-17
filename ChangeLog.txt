@@ -2,6 +2,8 @@
 
 work better with VLC.  Still flows "as fast as possible" (disregards fps with VLC) but at least doesn't confuse VLC to death anymore.
 
+installer tweaks
+
 0.0.1
 
 Working 

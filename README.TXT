@@ -78,3 +78,4 @@ Ping me if you ever want any of the following:
 "easier setup" (directshow capture sources without GraphStudio, video on video preview, etc.) 
 "going from one script to another dynamically/allowing for a script to change/update/going from one 'view setting' to another"
 support for receiving audio
+Force VLC to serve frames "in realtime" (currently it just pulls frames as quickly as possible, which isn't quite right)

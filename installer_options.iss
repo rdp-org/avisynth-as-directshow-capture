@@ -20,7 +20,8 @@ Source: vendor\vcredist_x86.exe; DestDir: {app}\vendor
 [Registry]
 Root: HKCU; Subkey: Software\avisynth-as-dshow-capture
 ;/* Flags: uninsdeletekeyifempty*/
-Root: HKCU; Subkey: Software\avisynth-as-dshow-capture; ValueType: string; ValueName: avs_filename_to_read; ValueData: {app}\configuration_setup_utility\version.avs
+Root: HKCU; Subkey: Software\avisynth-as-dshow-capture; ValueType: string; ValueName: avs_filename_to_read; ValueData: {app}\configuration_setup_utility\version.avs; Flags: createvalueifdoesntexist
+; don't overwrite old value
 
 [Setup]
 AppName={#AppName}
@@ -28,12 +29,12 @@ AppVerName={#AppVer}
 DefaultDirName={pf}\{#AppName}
 DefaultGroupName={#AppName}
 UninstallDisplayName={#AppName} uninstall
-OutputBaseFilename=Setup {#AppName} v{#AppVer}
+OutputBaseFilename=setup {#AppName} v{#AppVer}
 OutputDir=releases
 
 [Icons]
 Name: {group}\Readme; Filename: {app}\README.TXT
-Name: {group}\configure by setting the input filename to use; Filename: {app}\configuration_setup_utility\setup_filename_to_use.bat; WorkingDir: {app}\configuration_setup_utility
+Name: {group}\configure by setting the input avisynth script filename to use; Filename: {app}\configuration_setup_utility\setup_filename_to_use.bat; WorkingDir: {app}\configuration_setup_utility
 Name: {group}\Release Notes; Filename: {app}\ChangeLog.txt
 Name: {group}\Uninstall {#AppName}; Filename: {uninstallexe}
-Name: {group}\test current avisynth input config; Filename: {app}\configuration_setup_utility\vendor\ffmpeg\bin\ffplay.exe; WorkingDir: {app}; Parameters: -f dshow -i video=avisynth-script-capture-source
+Name: {group}\test current avisynth input config (version by default); Filename: {app}\configuration_setup_utility\vendor\ffmpeg\bin\ffplay.exe; WorkingDir: {app}; Parameters: -f dshow -i video=avisynth-script-capture-source
