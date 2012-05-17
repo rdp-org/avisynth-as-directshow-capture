@@ -1,4 +1,9 @@
-This program allows one to take input from an AviSynth file, and input it to your "favorite" directshow app (vlc, ffmpeg, streaming apps, etc.).
+Want to broadcast yourself with a presentation slides *and* your 
+
+
+Basically this allows you to take arbitrary input, like "2 webcams" or "desktop screen capture and a webcam" and combine them, into VLC.
+
+This program allows one to take input from an AviSynth script file, and input it to your "favorite" directshow app (vlc, ffmpeg, streaming apps, etc.).
 
 AviSynth files can stream files or live capture sources.  They can also apply "extra filters" to the output, like overlaying one image over another, etc.
 
@@ -8,7 +13,7 @@ Who *doesn't* want to be able to use skype with flexible/controlled input, after
 
 = Installation =
 
-Install "avisynth" v2.x http://sourceforge.net/projects/avisynth2/files/AviSynth%202.5 (you can just use the default installer options when it asks you)
+Install "avisynth" v2.x from http://sourceforge.net/projects/avisynth2/files/AviSynth%202.5 (you can just use the default installer options when it asks you)
 Download and install this device driver from https://github.com/rdp-org/avisynth-as-directshow-capture/downloads
 
 Now run "program files" => "avisynth capture" => "test current avisynth config"
@@ -40,9 +45,9 @@ Here is my "demo" of combining two live sources into 1: https://github.com/rdp-o
 = Using Live Sources =
 
 To input a live source, create a "graphedit" file (download GraphStudio [1], run it, 
-graph [menu] insert filters -> select video capture sources from dropdown, select yourself from list at right), save.  
+graph [menu] insert filters -> select video capture sources from dropdown, select yourself from list at right), save somewhere (like "filename.GRF").  
 Then create your avs file, it will look like.
-directshowsource("screen-capture-recorder.GRF", audio=False, framecount=1000000, fps=10) # fps is just to force it 'down' to that fps, except for VLC which ignores it [ask if you want that fixed]
+directshowsource("filename.GRF", audio=False, framecount=1000000, fps=10) # fps is just to force it 'down' to that fps, except for VLC which ignores it [ask if you want that fixed]
 
 [1] http://blog.monogram.sk/janos/tools/monogram-graphstudio/
 
@@ -58,6 +63,8 @@ is just another tool for you in your belt.
 
 There is also currently a known bug that if you set an fps, it isn't respected (it just streams as fast as possible).  Ping me if you want this fixed.
 
+You might need ConvertToYV12 in your script if you want to feed it to Flash Media Live Encoder (I haven't tried it).
+
 = Contact/feedback/issues =
 
 http://groups.google.com/group/roger-projects
@@ -65,3 +72,9 @@ roger-projects@googlegroups.com
 
 Source: https://github.com/rdp-org/avisynth-as-directshow-capture
 Ping me for any feature requests, like easier video on video, etc.
+
+= Future work =
+Ping me if you ever want any of the following:
+"easier setup" (directshow capture sources without GraphStudio, video on video preview, etc.) 
+"going from one script to another dynamically/allowing for a script to change/update/going from one 'view setting' to another"
+support for receiving audio

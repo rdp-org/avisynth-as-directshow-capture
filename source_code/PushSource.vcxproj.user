@@ -6,7 +6,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LocalDebuggerCommand>C:\Program Files (x86)\VideoLAN\VLC\vlc.exe</LocalDebuggerCommand>
     <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments>dshow:// :dshow-vdev=avisynth-as-capture-source :dshow-adev=none</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommandArguments>dshow:// :dshow-vdev=avisynth-script-capture-source :dshow-adev=none</LocalDebuggerCommandArguments>
     <LocalDebuggerWorkingDirectory>c:\dev\ruby\avisynth-as-directshow-capture</LocalDebuggerWorkingDirectory>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">

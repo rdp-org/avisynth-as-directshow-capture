@@ -1,3 +1,7 @@
+0.0.2
+
+work better with VLC.  Still flows "as fast as possible" (disregards fps with VLC) but at least doesn't confuse VLC to death anymore.
+
 0.0.1
 
 Working 
