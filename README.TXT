@@ -14,7 +14,7 @@ Download and install this device driver from https://github.com/rdp-org/avisynth
 Now run "program files" => "avisynth capture" => "test current avisynth config"
 It should display a 'version' video.  If it does, eureka! Now proceed to "usage"
 
-You can now use the directshow capture device "avisynth-as-capture-source" in any directshow friendly app,
+You can now use the directshow capture device "avisynth-script-capture-source" in any directshow friendly app,
 like ffmpeg, VLC, etc.
 
 = Usage =
