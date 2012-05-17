@@ -39,10 +39,14 @@ Here is my "demo" of combining two live sources into 1: https://github.com/rdp-o
 
 = Using Live Sources =
 
-To input a live source, create a "graphedit" file (download GraphStudio, run it, insert filters -> video capture source), save.  Then in your avs file, it will look like.
-directshowsource("screen-capture-recorder.GRF", audio=False, framecount=1000000, fps=10) # fps is just to force it 'down' to that fps, or 'fake it up' to that fps through duplication
+To input a live source, create a "graphedit" file (download GraphStudio [1], run it, 
+graph [menu] insert filters -> select video capture sources from dropdown, select yourself from list at right), save.  
+Then create your avs file, it will look like.
+directshowsource("screen-capture-recorder.GRF", audio=False, framecount=1000000, fps=10) # fps is just to force it 'down' to that fps, except for VLC which ignores it [ask if you want that fixed]
 
-= Trouble shooting =
+[1] http://blog.monogram.sk/janos/tools/monogram-graphstudio/
+
+= TroubleShooting =
 
 Sometimes you need to set the fps to double what you actually want, since AviSynth is, 
 timing wise, I think "just missing" frames so it always waits for a second one to come through.
