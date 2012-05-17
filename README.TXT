@@ -42,7 +42,8 @@ NB that several "other programs" natively accept .avs files, so you don't need t
 Also note that you may be able to get "similar effects" (overlay, etc.) by using programs that natively accept directshow input, then
 using their own "built in" overlay filters, etc. (in which case, you don't need to use this capture device).
 I just like being able to use aviSynth since it's so much simpler, and
-can hopefully allow for cool effects "later" like switching input dynamically, etc. (ping me if you want that implemented).
+can hopefully allow for cool effects and also hopefully being able to switch input dynamically, etc. (later) (ping me if you want any of this
+implemented).
 
 = AviSynth =
 
