@@ -8,7 +8,7 @@ Who *doesn't* want to be able to use skype with flexible/controlled input, after
 
 = Installation =
 
-Install "avisynth" 2.x (https://sourceforge.net/projects/avisynth2)
+Install "avisynth" v2.x (http://sourceforge.net/projects/avisynth2/files/AviSynth%202.5)
 Install this app, download from https://github.com/rdp-org/avisynth-as-directshow-capture/downloads
 
 Now run "program files" => "avisynth capture" => "test current avisynth config"
