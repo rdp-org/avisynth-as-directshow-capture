@@ -9,10 +9,13 @@ Who *doesn't* want to be able to use skype with flexible/controlled input, after
 = Installation =
 
 Install "avisynth" v2.x (http://sourceforge.net/projects/avisynth2/files/AviSynth%202.5)
-Install this app, download from https://github.com/rdp-org/avisynth-as-directshow-capture/downloads
+Download and install this device driver from https://github.com/rdp-org/avisynth-as-directshow-capture/downloads
 
 Now run "program files" => "avisynth capture" => "test current avisynth config"
 It should display a 'version' video.  If it does, eureka! Now proceed to "usage"
+
+You can now use the directshow capture device "avisynth-as-capture-source" in any directshow friendly app,
+like ffmpeg, VLC, etc.
 
 = Usage =
 
