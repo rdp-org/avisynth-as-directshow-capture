@@ -38,9 +38,12 @@ HKEY_CURRENT_USER\\Software\\avisynth-as-dshow-capture\\avs_filename_to_read
 to be a string containig the full path to the file you created.
 (or use one of the helper setup utilities provided, to set this key to be the filename).
 
+https://github.com/rdp-org/avisynth-as-directshow-capture/tree/master/samples has a few examples, the script might even work if you install the
+https://github.com/rdp/screen-capture-recorder-to-video-windows-free device.
+
 NB that several "other programs" natively accept .avs files, so you don't need this capture at all to use the scripts (mplayer, ffmpeg).
 Also note that you may be able to get "similar effects" (overlay, etc.) by using programs that natively accept directshow input, then
-using their own "built in" overlay filters, etc. (in which case, you don't need to use this capture device).
+using their own "built in" overlay filters, etc. (in which case, you don't need to use this capture device--for instance ffmpeg can broadcast, so can VLC).
 I just like being able to use aviSynth since it's so much simpler, and
 can hopefully allow for cool effects and also hopefully being able to switch input dynamically, etc. (later) (ping me if you want any of this
 implemented).
@@ -80,6 +83,10 @@ roger-projects@googlegroups.com
 
 Source: https://github.com/rdp-org/avisynth-as-directshow-capture
 Ping me for any feature requests, like easier video on video, etc.
+
+= See also =
+
+http://rogerdpack.t28.net list my "virtual audio capture directshow device" and also my "screen capture directshow capture device" which may be useful to you/related.
 
 = Future work =
 Ping me if you ever want any of the following:

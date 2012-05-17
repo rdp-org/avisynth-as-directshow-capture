@@ -1,20 +1,18 @@
 = todo =
 
-advertise doom9
-
 == maybe ==
 
-not releasing right? (with debug mode screen capture)
+advertise msdn,  "Avisynth Usage"
 
-advertise msdn
+== never ==
+
+not releasing right? (with debug mode screen capture)
+audio, separate file uh guess
 
 demos
   "box in box" script demo LOL
 
-== never ==
-audio, separate file uh guess
-
-"on the fly" graphedit creation
+"on the fly" graphedit files created for specific input sources
   the same, but with "on the fly" better selection of output type "from that pin" somehow
 distribute with avisynth.dll, add to end of PATH
   just graphedit 4 now...with instructions
