@@ -1,5 +1,6 @@
-Want to broadcast yourself with a presentation slides *and* your 
-
+Want to broadcast yourself with a presentation slides *and* your webcam (face) side by side?
+Record several webcams in the same video?
+This app makes that possible.
 
 Basically this allows you to take arbitrary input, like "2 webcams" or "desktop screen capture and a webcam" and combine them, into VLC.
 
@@ -36,6 +37,12 @@ HKEY_CURRENT_USER\\Software\\avisynth-as-dshow-capture\\avs_filename_to_read
 
 to be a string containig the full path to the file you created.
 (or use one of the helper setup utilities provided, to set this key to be the filename).
+
+NB that several "other programs" natively accept .avs files, so you don't need this capture at all to use the scripts (mplayer, ffmpeg).
+Also note that you may be able to get "similar effects" (overlay, etc.) by using programs that natively accept directshow input, then
+using their own "built in" overlay filters, etc. (in which case, you don't need to use this capture device).
+I just like being able to use aviSynth since it's so much simpler, and
+can hopefully allow for cool effects "later" like switching input dynamically, etc. (ping me if you want that implemented).
 
 = AviSynth =
 
