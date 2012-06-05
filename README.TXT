@@ -86,6 +86,9 @@ Ping me for any feature requests, like easier video on video, etc.
 
 = See also =
 
+Looks like ffdshow "might" also have something related to this project:
+    "ffdshow has an AVISynth filter. Enable it and copy and paste your AVISynth script into the filter's text area. Also make sure the "Add ffdshow video source" checkbox is ticked."
+
 http://rogerdpack.t28.net list my "virtual audio capture directshow device" and also my "screen capture directshow capture device" which may be useful to you/related.
 
 = Future work =
