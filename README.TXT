@@ -2,9 +2,10 @@ Want to broadcast yourself with a presentation slides *and* your webcam (face) s
 Record several webcams in the same video?
 This app makes that possible.
 
-Basically this allows you to take arbitrary input, like "2 webcams" or "desktop screen capture and a webcam" and combine them, into VLC.
+Basically this allows you to take arbitrary input, like "2 webcams" or "desktop screen capture and a webcam" or a "movie" file and combine them, into VLC.  Or skype.  Or anything that takes video.
 
-This program allows one to take input from an AviSynth script file, and input it to your "favorite" directshow app (vlc, ffmpeg, streaming apps, etc.).
+This program does this by allowing input from an AviSynth script file, and input it to your "favorite" directshow app (vlc, ffmpeg, streaming apps, etc.).
+Basically it creates a "fake" capture device that will stream what's in that script file.
 
 AviSynth files can stream files or live capture sources.  They can also apply "extra filters" to the output, like overlaying one image over another, etc.
 
@@ -90,6 +91,8 @@ Looks like ffdshow "might" also have something related to this project:
     "ffdshow has an AVISynth filter. Enable it and copy and paste your AVISynth script into the filter's text area. Also make sure the "Add ffdshow video source" checkbox is ticked."
 
 http://rogerdpack.t28.net list my "virtual audio capture directshow device" and also my "screen capture directshow capture device" which may be useful to you/related.
+
+NB that stuff like FFmpeg/VLC can also overlay videos.  This one is just another option.  But some others can't, so win there?!
 
 = Future work =
 Ping me if you ever want any of the following:
